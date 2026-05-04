@@ -1,0 +1,251 @@
+#include <iostream>
+#include "Player.h"
+#include "JobWarrior.h"
+#include "JobMage.h"
+#include "JobRogue.h"
+#include "JobArcher.h"
+
+using namespace std;
+
+Player::Player() {
+	_hp_potion = 5;
+	_mp_potion = 5;
+	_exp = 0;
+	_maxExp = 100;
+	_job = nullptr;
+
+	_level = 1;
+	_LevelUpHpAdd = 10;
+	_LevelUpMpAdd = 5;
+	_LevelUpAttackPowerAdd = 5;
+	_LevelUpDefenceAdd = 10;
+}
+
+Player::~Player() {
+	if(_job != nullptr) delete _job;
+}
+
+void Player::CreateCharacter(void) {
+
+	cout << "===========================================\n\t[Dungeon Escape Text RPG]\n===========================================\n";
+	cout << "Enter your hero's name: ";
+	cin >> _name;
+
+	unsigned __int32 hp;
+	unsigned __int32 mp;
+	while (1) {	
+		cout << "\nEnter HP and MP: ";
+		cin >> hp >> mp;
+		if (hp > 50 && mp > 50 && hp <= _statLimit && mp <= _statLimit) {
+			_hp = hp;
+			_mp = mp;
+			break;
+		}
+		else {
+			cout << "HP or MP is invalid. Try again.";
+		}
+	}
+
+	unsigned __int32 JobAttackProc;
+	unsigned __int32 defence;
+	while (1) {
+		cout << "Enter Attack and Defense: ";
+		cin >> JobAttackProc >> defence;
+		if (JobAttackProc > 50 && defence > 50 && JobAttackProc <= _statLimit && defence <= _statLimit) {
+			_attackPower = JobAttackProc;
+			_defence = defence;
+			break;
+		}
+		else {
+			cout << "Attack or Defense is invalid. Try again.\n";
+		}
+	}
+
+	cout << "\n\n";
+}
+
+void Player::PrintStatus(void) const {
+
+	cout << "====================================\n";
+	cout << "\t" << _name << " stats\n";
+	cout << "====================================\n";
+	cout << "HP: " << _hp << "\t\tMP: " << _mp << '\n';
+	cout << "Attack: " << _attackPower << "\tDefence: " << _defence << '\n';
+	cout << "Level: " << _level << "\tExp: " << _exp << '\n';
+	cout << "====================================\n";
+
+	cout << "\n\n";
+}
+
+void Player::StatusUpgrade(void) {
+
+	cout << "* You received 5 HP Potions and 5 MP Potions.\n";
+
+	__int32 ans;
+	bool ch = true;
+	while (ch) {
+		cout << "============================================\n";
+		cout << "< Character Upgrade >\n";
+		cout << "1. HP UP\t2. MP UP\t3. Attack  x2\n4. Defense x2\t5. Show Stats\t0. Start Game\n";
+		cout << "============================================\n";
+		cout << "Choose: ";
+		cin >> ans;
+
+		switch (ans) {
+		case 0: {
+			cout << "Starting the game!";
+			ch = false;
+			break;
+		}
+		case 1: {
+			if (_hp_potion == 0) {
+				cout << "There's no hp potion!\n";
+			}
+			else {
+				_hp_potion--;
+				_hp += 20;
+				cout << "* HP increased by 20. ";
+				cout << "(HP Potion used: " << _hp_potion << " left)\n";
+			}
+			
+			break;
+		}
+		case 2: {
+			if (_mp_potion == 0) {
+				cout << "There's no mp potion!\n";
+			}
+			else {
+				_mp_potion--;
+				_mp += 20;
+				cout << "* MP increased by 20. ";
+				cout << "(MP Potion used: " << _mp_potion << " left)\n";
+			}
+			
+			break;
+		}
+		case 3: {
+			_attackPower *= 2;
+			if (_attackPower <= _statLimit) {
+				cout << "* Attack increased by x2.\n";
+			}
+			else {
+				_attackPower = _statLimit;
+				cout << "* Attack is max!\n";
+			}
+			cout << "Current Attack: " << _attackPower << '\n';
+			
+			break;
+		}
+		case 4: {
+			_defence *= 2;
+			if (_defence <= _statLimit) {
+				cout << "* Defence increased by x2.\n";
+			}
+			else {
+				_defence = _statLimit;
+				cout << "* Defence is max!\n";
+			}
+			cout << "Current Defence: " << _defence << '\n';
+
+			break;
+		}
+		case 5: {
+			PrintStatus();
+			break;
+		}
+		default: {
+			cout << "Invalid input.\n";
+			ch = true;
+			break;
+		}
+		}
+	}
+
+	cout << "\n\n";
+}
+
+void Player::JobSelection(void) {
+
+	__int32 ans;
+	bool ch = true;
+
+	while (ch) {
+		ch = false;
+		cout << "< Job Selection >\n";
+		cout << _name << ", choose your job!\n";
+		cout << "1. Warrior   2. Mage   3. Rogue   4. Archer\n";
+		cout << "Choose: ";
+		cin >> ans;
+		switch (ans) {
+		case 1: {
+			cout << "* You became a Warrior! (HP +30)\n";
+			_hp += 30;
+			_job = new JobWarrior;
+			cout << WARRIOR_ATTACK;
+			break;
+		}
+		case 2: {
+			cout << "* You became a Mage! (MP +30)\n";
+			_mp += 30;
+			_job = new JobMage;
+			cout << MAGE_ATTACK;
+			break;
+		}
+		case 3: {
+			cout << "* You became a Rogue! (Attack +30)\n";
+			_attackPower += 30;
+			_job = new JobRogue;
+			cout << ROGUE_ATTACK;
+			break;
+		}
+		case 4: {
+			cout << "* You became a Archer! (Defence +30)\n";
+			_defence += 30;
+			_job = new JobArcher;
+			cout << ARCHER_ATTACK;
+			break;
+		}
+		default: {
+			cout << "Invalid input.\n";
+			ch = true;
+			break;
+		}
+		}
+	}
+
+	cout << "------------------------------------\n";
+	cout << "Name: " << _name << "\tJob: " << _job->GetJobName() << "\tLv." << _level << '\n';
+	cout << "HP: " << _hp << "\t\tMP: " << _mp << "\t\tAttack: " << _attackPower << "\tDefense: " << _defence << '\n';
+	cout << "------------------------------------\n";
+	
+	cout << "\n\n";
+}
+
+void Player::PrintInventoryInfo(void) const {
+
+	size_t sz = _inventory.size();
+	cout << "[ Inventory (" << sz << "/10) ]\n";
+	for (__int32 i = 0; i < sz; i++) {
+		cout << i + 1 << ". ";
+		_inventory[i].PrintInfo();
+	}
+
+	cout << "\n\n";
+}
+
+bool Player::AddExp(unsigned __int32 exp) {
+	_exp += exp;
+	if (_exp >= _maxExp) {
+		_level++;
+		_exp -= _maxExp;
+
+		_hp += _LevelUpHpAdd;
+		_mp += _LevelUpMpAdd;
+		_attackPower += _LevelUpAttackPowerAdd;
+		_defence += _LevelUpDefenceAdd;
+
+		return true;
+	}
+
+	return false;
+}
