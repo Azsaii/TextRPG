@@ -2,24 +2,11 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-
-enum PotionName {
-	HP_POTION,
-	STAMINA_POTION,
-};
-
-enum IngredientName {
-	HERB,
-	CLEAR_WATER,
-	BERRY
-};
+#include "ItemDefine.h"
 
 struct Recipe {
-	PotionName _potionName;
+	ItemName _potionName;
 	std::unordered_map<IngredientName, __int32> _ingredients;
-
-	std::string GetPotionName(void) const;
-	std::string GetIngredientName(IngredientName name) const;
 	void PrintPotionInfo(void) const;
 };
 

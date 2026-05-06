@@ -2,16 +2,16 @@
 #include "MonsterOrc.h"
 
 MonsterOrc::MonsterOrc() {
-	_hp = 80;
-	_attackPower = 35;
-	_defence = 30;
+	_hp = 350;
+	_maxHp = 350;
+	_attackPower = 130;
+	_defence = 100;
 	_name = "Orc";
 	_expReward = 100;
 
-	_dropItem._name = "Orc Leather";
-	_dropItem._price = 100;
+	_dropItem = ORC_LEATHER;
 }
 
 void MonsterOrc::MonsterAttackProc(void) {
-	std::cout << "* " << _name << "is attacking!\n";
+
 }

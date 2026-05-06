@@ -8,8 +8,6 @@
 using namespace std;
 
 Player::Player() {
-	_hp_potion = 5;
-	_mp_potion = 5;
 	_exp = 0;
 	_maxExp = 100;
 	_job = nullptr;
@@ -19,6 +17,11 @@ Player::Player() {
 	_LevelUpMpAdd = 5;
 	_LevelUpAttackPowerAdd = 5;
 	_LevelUpDefenceAdd = 10;
+
+	_inventory_limit = 10;
+
+	_inventory[HP_POTION] = 5;
+	_inventory[MP_POTION] = 5;
 }
 
 Player::~Player() {
@@ -28,17 +31,27 @@ Player::~Player() {
 void Player::CreateCharacter(void) {
 
 	cout << "===========================================\n\t[Dungeon Escape Text RPG]\n===========================================\n";
+	
 	cout << "Enter your hero's name: ";
-	cin >> _name;
+	getline(cin, _name);
 
 	unsigned __int32 hp;
 	unsigned __int32 mp;
 	while (1) {	
 		cout << "\nEnter HP and MP: ";
-		cin >> hp >> mp;
+
+		if (!(cin >> hp >> mp)) {
+			cin.clear();
+			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			cout << "Invalid input. Try again.\n";
+			continue;
+		}
+
 		if (hp > 50 && mp > 50 && hp <= _statLimit && mp <= _statLimit) {
 			_hp = hp;
+			_maxHp = hp;
 			_mp = mp;
+			_maxMp = mp;
 			break;
 		}
 		else {
@@ -50,7 +63,14 @@ void Player::CreateCharacter(void) {
 	unsigned __int32 defence;
 	while (1) {
 		cout << "Enter Attack and Defense: ";
-		cin >> JobAttackProc >> defence;
+		
+		if (!(cin >> JobAttackProc >> defence)) {
+			cin.clear();
+			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			cout << "Invalid input. Try again.\n";
+			continue;
+		}
+
 		if (JobAttackProc > 50 && defence > 50 && JobAttackProc <= _statLimit && defence <= _statLimit) {
 			_attackPower = JobAttackProc;
 			_defence = defence;
@@ -66,7 +86,7 @@ void Player::CreateCharacter(void) {
 
 void Player::PrintStatus(void) const {
 
-	cout << "====================================\n";
+	cout << "\n====================================\n";
 	cout << "\t" << _name << " stats\n";
 	cout << "====================================\n";
 	cout << "HP: " << _hp << "\t\tMP: " << _mp << '\n';
@@ -74,51 +94,57 @@ void Player::PrintStatus(void) const {
 	cout << "Level: " << _level << "\tExp: " << _exp << '\n';
 	cout << "====================================\n";
 
-	cout << "\n\n";
+	cout << "\n";
 }
 
 void Player::StatusUpgrade(void) {
 
 	cout << "* You received 5 HP Potions and 5 MP Potions.\n";
 
-	__int32 ans;
-	bool ch = true;
-	while (ch) {
-		cout << "============================================\n";
+	__int32 in;
+	bool loop = true;
+	while (loop) {
+		cout << "\n============================================\n";
 		cout << "< Character Upgrade >\n";
 		cout << "1. HP UP\t2. MP UP\t3. Attack  x2\n4. Defense x2\t5. Show Stats\t0. Start Game\n";
 		cout << "============================================\n";
 		cout << "Choose: ";
-		cin >> ans;
+		
+		if (!(cin >> in)) {
+			cin.clear();
+			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			cout << "Invalid input. Try again.\n";
+			continue;
+		}
 
-		switch (ans) {
+		switch (in) {
 		case 0: {
 			cout << "Starting the game!";
-			ch = false;
+			loop = false;
 			break;
 		}
 		case 1: {
-			if (_hp_potion == 0) {
+			if (_inventory[HP_POTION] == 0) {
 				cout << "There's no hp potion!\n";
 			}
 			else {
-				_hp_potion--;
+				_inventory[HP_POTION]--;
 				_hp += 20;
 				cout << "* HP increased by 20. ";
-				cout << "(HP Potion used: " << _hp_potion << " left)\n";
+				cout << "(HP Potion used: " << _inventory[HP_POTION] << " left)\n";
 			}
 			
 			break;
 		}
 		case 2: {
-			if (_mp_potion == 0) {
+			if (_inventory[MP_POTION] == 0) {
 				cout << "There's no mp potion!\n";
 			}
 			else {
-				_mp_potion--;
+				_inventory[MP_POTION]--;
 				_mp += 20;
 				cout << "* MP increased by 20. ";
-				cout << "(MP Potion used: " << _mp_potion << " left)\n";
+				cout << "(MP Potion used: " << _inventory[MP_POTION] << " left)\n";
 			}
 			
 			break;
@@ -155,7 +181,6 @@ void Player::StatusUpgrade(void) {
 		}
 		default: {
 			cout << "Invalid input.\n";
-			ch = true;
 			break;
 		}
 		}
@@ -166,17 +191,24 @@ void Player::StatusUpgrade(void) {
 
 void Player::JobSelection(void) {
 
-	__int32 ans;
-	bool ch = true;
+	__int32 in;
+	bool loop = true;
 
-	while (ch) {
-		ch = false;
+	while (loop) {
+		loop = false;
 		cout << "< Job Selection >\n";
 		cout << _name << ", choose your job!\n";
 		cout << "1. Warrior   2. Mage   3. Rogue   4. Archer\n";
 		cout << "Choose: ";
-		cin >> ans;
-		switch (ans) {
+		
+		if (!(cin >> in)) {
+			cin.clear();
+			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			cout << "Invalid input. Try again.\n";
+			continue;
+		}
+
+		switch (in) {
 		case 1: {
 			cout << "* You became a Warrior! (HP +30)\n";
 			_hp += 30;
@@ -207,7 +239,7 @@ void Player::JobSelection(void) {
 		}
 		default: {
 			cout << "Invalid input.\n";
-			ch = true;
+			loop = true;
 			break;
 		}
 		}
@@ -224,10 +256,11 @@ void Player::JobSelection(void) {
 void Player::PrintInventoryInfo(void) const {
 
 	size_t sz = _inventory.size();
-	cout << "[ Inventory (" << sz << "/10) ]\n";
-	for (__int32 i = 0; i < sz; i++) {
-		cout << i + 1 << ". ";
-		_inventory[i].PrintInfo();
+	cout << "[ Inventory (" << sz << "/" << _inventory_limit << ") ]\n";
+	__int32 i = 1;
+	for (const auto& [key, val] : _inventory) {
+		cout << i++ << ". ";
+		cout << Item::GetItemName(key) << " (" << Item::GetItemPrice(key) << "G) x" << val << '\n';
 	}
 
 	cout << "\n\n";
@@ -248,4 +281,39 @@ bool Player::AddExp(unsigned __int32 exp) {
 	}
 
 	return false;
+}
+
+ItemName Player::GetItemNameByIndex(unsigned __int32 index) {
+	__int32 i = 1;
+	for (const auto& [key, val] : _inventory) {
+		if (i++ == index) return key;
+	}
+	return INVALID;
+}
+
+void Player::UseItem(ItemName itemName) {
+	switch (itemName) {
+	case HP_POTION: {
+		cout << "* HP Potion used! HP restored by 50 (" << _hp << " -> " << _hp + 50 << ")\n";
+		_hp += 50;
+		_inventory[HP_POTION]--;
+		break;
+	}
+	case MP_POTION: {
+		cout << "* MP Potion used! MP restored by 50 (" << _mp << " -> " << _mp + 50 << ")\n";
+		_mp += 50;
+		_inventory[MP_POTION]--;
+		break;
+	}
+	case STAMINA_POTION: {
+		cout << "* Stamina Potion used!\n";
+		break;
+	}
+	default: {
+		cout << "* Unavailable Items.\n";
+		break;
+	}
+	}
+
+	cout << "\n\n";
 }

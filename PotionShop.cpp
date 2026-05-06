@@ -3,35 +3,14 @@
 
 using namespace std;
 
-string Recipe::GetPotionName(void) const {
-
-	switch (_potionName) {
-	case HP_POTION: return "HPPotion";
-	case STAMINA_POTION: return "StaminaPotion";
-	}
-
-	return "InvalidPotionName";
-}
-
-string Recipe::GetIngredientName(IngredientName name) const {
-
-	switch (name) {
-	case HERB: return "Herb";
-	case CLEAR_WATER: return "Clear Water";
-	case BERRY: return "Berry";
-	}
-
-	return "InvalidIngredientName";
-}
-
 void Recipe::PrintPotionInfo(void) const {
 
-	cout << "-> " << GetPotionName() << " (";
+	cout << "-> " << Item::GetItemName(_potionName) << " (";
 
 	bool isFirst = true;
 	for (const auto& [key, val] : _ingredients) {
 		if (!isFirst) cout << ", ";
-		cout << GetIngredientName(key) << " x" << val;
+		cout << Item::GetIngredientName(key) << " x" << val;
 		isFirst = false;
 	}
 
@@ -46,6 +25,12 @@ PotionShop::PotionShop() {
 	HPPotion._ingredients[CLEAR_WATER] = 1;
 	_recipes.push_back(HPPotion);
 
+	Recipe MPPotion;
+	MPPotion._potionName = MP_POTION;
+	MPPotion._ingredients[HERB] = 2;
+	MPPotion._ingredients[CLEAR_WATER] = 1;
+	_recipes.push_back(MPPotion);
+
 	Recipe StaminaPotion;
 	StaminaPotion._potionName = STAMINA_POTION;
 	StaminaPotion._ingredients[HERB] = 1;
@@ -58,11 +43,11 @@ void PotionShop::ShowPotionShopMenu(void) const {
 
 	cout << "\n\n";
 
-	bool ch = true;
-	__int32 ans;
-	string in;
+	bool loop = true;
+	__int32 in;
+	string search;
 
-	while (ch) {
+	while (loop) {
 
 		cout << "=== Potion Shop ===\n";
 		cout << "1. Show all recipes\n";
@@ -71,12 +56,17 @@ void PotionShop::ShowPotionShopMenu(void) const {
 		cout << "0. Go back\n";
 
 		cout << "\nChoose: ";
-		cin >> ans;
+		if (!(cin >> in)) {
+			cin.clear();
+			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			cout << "Invalid input.\n";
+			continue;
+		}
 
-		switch (ans) {
+		switch (in) {
 		case 0: {
 			cout << "Good Bye.\n";
-			ch = false;
+			loop = false;
 			break;
 		}
 		case 1: {
@@ -85,19 +75,20 @@ void PotionShop::ShowPotionShopMenu(void) const {
 		}
 		case 2: {	
 			cout << "Search potion name: ";
-			cin >> in;
-			SearchByPotionName(in);
+			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			getline(cin, search);
+			SearchByPotionName(search);
 			break;
 		}
 		case 3: {
 			cout << "Search ingredient: ";
-			cin >> in;
-			SearchByIngredient(in);
+			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			getline(cin, search);
+			SearchByIngredient(search);
 			break;
 		}
 		default: {
 			cout << "Invalid input.\n";
-			ch = true;
 			break;
 		}
 		}
@@ -120,7 +111,7 @@ void PotionShop::SearchByPotionName(string potionName) const {
 
 	bool check = false;
 	for (const auto& recipe : _recipes) {
-		if (recipe.GetPotionName() == potionName) {
+		if (Item::GetItemName(recipe._potionName) == potionName) {
 			recipe.PrintPotionInfo();
 			check = true;
 			break;
@@ -136,7 +127,7 @@ void PotionShop::SearchByIngredient(string ingredientName) const {
 	__int32 cnt = 0;
 	for (const auto& recipe : _recipes) {	
 		for (const auto& [key, val] : recipe._ingredients) {
-			if (recipe.GetIngredientName(key) == ingredientName) {
+			if (Item::GetIngredientName(key) == ingredientName) {
 				recipe.PrintPotionInfo();
 				cnt++;
 			}

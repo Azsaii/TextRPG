@@ -13,12 +13,13 @@ public:
 	
 	GameManager(const GameManager&) = delete;
 	GameManager& operator=(const GameManager&) = delete;
-	~GameManager() = default;
+	~GameManager();
 
-	Dungeon* _currentDungeon;
+	std::vector<Dungeon*> _dungeons;
+	unsigned __int32 _currentDungeonIndex;
 
 	static GameManager* GetInstance(void);
 	void StartPlayerSetting(void);
 	void MainMenuProc(void);
-	void StartBattle(Dungeon* dungeon);
+	void StartBattle(void);
 };

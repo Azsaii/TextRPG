@@ -25,5 +25,5 @@ void JobWarrior::JobAttackProc(unsigned __int32 attackPower, Character* target) 
 	if (_attackCount == 1) cout << "!\n";
 	else cout << "! (x" << _attackCount << ")\n";
 
-	cout << target->_name << "HP: " << prevHp << " -> " << target->_hp;
+	cout << target->_name << " HP: " << prevHp << " -> " << target->_hp;
 }

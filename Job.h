@@ -13,8 +13,6 @@ enum JobName {
 	MAGE,
 	ROGUE,
 	ARCHER,
-
-	SLIME
 };
 
 class Job {

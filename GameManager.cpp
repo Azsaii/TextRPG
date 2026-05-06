@@ -1,13 +1,25 @@
 #include <iostream>
 #include "GameManager.h"
-#include "DungeonFloor1.h"
+#include "Dungeon.h"
 
 using namespace std;
 
 GameManager::GameManager(void) {
-	_currentDungeon = nullptr;
+	_currentDungeonIndex = 0;
 
+	vector<MonsterType> t1 = { SLIME, GOBLIN, ORC, DRAGON };
+	Dungeon* d1 = new Dungeon(4, "Dungeon Floot 1", t1);
+	_dungeons.push_back(d1);
 
+	/*vector<MonsterType> t2 = { SLIME, GOBLIN, GOBLIN, ORC, ORC, DRAGON };
+	Dungeon* d2 = new Dungeon(6, "Dungeon Floot 2", t2);
+	_dungeons.push_back(d2);*/
+}
+
+GameManager::~GameManager(void) {
+	for (const auto& d : _dungeons) {
+		delete d;
+	}
 }
 
 GameManager* GameManager::GetInstance(void) {
@@ -25,32 +37,34 @@ void GameManager::StartPlayerSetting(void) {
 }
 
 void GameManager::MainMenuProc(void) {
-	cout << "\n\n";
 
 	bool ch = true;
-	__int32 ans;
+	__int32 in;
 
 	while (ch) {
 
-		cout << "\n=== Main Menu ===\n";
+		cout << "=== Main Menu ===\n";
 		cout << "1. Enter Dungeon\n";
 		cout << "2. Check Inventory\n";
 		cout << "3. Potion Shop\n";
 		cout << "0. Quit\n";
 
 		cout << "\nChoose: ";
-		cin >> ans;
+		if (!(cin >> in)) {
+			cin.clear();
+			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			cout << "Invalid input.\n";
+			continue;
+		}
 
-		switch (ans) {
+		switch (in) {
 		case 0: {
 			cout << "Good Bye.";
 			ch = false;
 			break;
 		}
 		case 1: {
-			Dungeon* currentDungeon = new DungeonFloor1;
-			StartBattle(currentDungeon);
-			delete currentDungeon;
+			StartBattle();
 			break;
 		}
 		case 2: {
@@ -70,19 +84,42 @@ void GameManager::MainMenuProc(void) {
 	}
 }
 
-void GameManager::StartBattle(Dungeon* dungeon) {
+void GameManager::StartBattle(void) {
 
 	cout << "\n\n";
 
-	__int32 currentRoomIndex = 0;
-	for (; currentRoomIndex < dungeon->normalMonsterCnt; currentRoomIndex++) {
-		if (dungeon->_clearCheck[currentRoomIndex] == false) break;
+	Dungeon* currentDungeon = _dungeons[_currentDungeonIndex];
+	cout << "[ " << currentDungeon->_dungeonName << " ]\n";
+	Monster* targetMonster = currentDungeon->_rooms[currentDungeon->_clearCnt]._monster;
+
+	for (__int32 floor = 0; floor < currentDungeon->_maxFloor - 1; floor++) {
+		const auto& room = currentDungeon->_rooms[floor];
+		Monster* currentMonster = room._monster;
+
+		cout << "Room " << floor + 1 << ": " << currentMonster->_name;
+		cout << "\t(HP " << currentMonster->_maxHp << ", Attack " << currentMonster->_attackPower << ")";
+
+		if (floor < currentDungeon->_clearCnt) {
+			cout << "\t-> Clear!";
+		}
+		cout << '\n';
 	}
 
-	Monster* targetMonster = dungeon->_monsters[currentRoomIndex];
+	if (currentDungeon->_clearCnt >= currentDungeon->_maxFloor - 1) {
+		Monster* boss = currentDungeon->_rooms[currentDungeon->_maxFloor - 1]._monster;
+		cout << "\n¡Ú Boss Room Unlocked!\n";
+		cout << "Boss Dragon appears!";
+		cout << "\t(HP " << boss->_maxHp << ", Attack " << boss->_attackPower << ", Defense " << boss->_defence << ")";
+		cout << "\n\n";
+	}
+	if (currentDungeon->_clearCnt == currentDungeon->_maxFloor) {
+		cout << "Dragon defeated!\n";
+		cout << "=== GAME CLEAR! ===\n";
+		cout << "\n\n";
+		return;
+	}
 
-	cout << "< " << dungeon->_dungeonName << " >\n";
-	cout << "[ Battle Start! ] " << _player._name << " vs " << targetMonster->_name << "\n\n";
+	cout << "\n[ Battle Start! ] " << _player._name << " vs " << targetMonster->_name;
 
 
 	bool isPlayerTurn = true;
@@ -90,27 +127,38 @@ void GameManager::StartBattle(Dungeon* dungeon) {
 	while (isBattleNotEnd) {
 
 		if (isPlayerTurn == true) {
-			cout << "--- Player Turn ---\n";
+			cout << "\n\n--- Player Turn ---\n";
 			bool ch = true;
 			while (ch) {
 				ch = false;
 				cout << "1. Attack\n";
 				cout << "2. Use Item\n";
 				cout << "Choose: ";
-				__int32 ans;
-				cin >> ans;
-				switch (ans) {
+
+				__int32 in;
+				if (!(cin >> in)) {
+					cin.clear();
+					cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+					cout << "Invalid input. Try again.\n";
+					continue;
+				}
+
+				cout << '\n';
+
+				switch (in) {
 				case 1: {
 					_player._job->JobAttackProc(_player._attackPower, targetMonster);
 					if (targetMonster->_hp == 0) {
+
 						cout << " (Dead)\n";
 						isBattleNotEnd = false;		
 
-						cout << "¡Ú Victory!\n";
+						cout << "\n¡Ú Victory!\n";
+						currentDungeon->_clearCnt++;
 
-						cout << "  -> Got: " << targetMonster->_dropItem._name<< "!\n";
-						cout << "Save to inventory.\n";
-						_player._inventory.push_back(targetMonster->_dropItem);
+						cout << "  -> Got: " << Item::GetItemName(targetMonster->_dropItem) << "!\n";
+						cout << "\nSave to inventory.\n";
+						_player._inventory[targetMonster->_dropItem]++;
 
 						cout << "  -> +" << targetMonster->_expReward << " EXP! (EXP: ";
 						cout << _player._exp + targetMonster->_expReward << "/" << _player._maxExp << ")\n\n";
@@ -125,7 +173,21 @@ void GameManager::StartBattle(Dungeon* dungeon) {
 					break;
 				}
 				case 2: {
+					_player.PrintInventoryInfo();
 
+					while (1) {
+						cout << "Choose: ";
+						__int32 itemIndex;
+						if (!(cin >> itemIndex)) {
+							cin.clear();
+							cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+							cout << "Invalid input. Try again.\n";
+							continue;
+						}
+
+						_player.UseItem(_player.GetItemNameByIndex(itemIndex));
+						break;
+					}
 					break;
 				}
 				default: {
@@ -137,8 +199,15 @@ void GameManager::StartBattle(Dungeon* dungeon) {
 			}
 		}
 		else {
-
+			cout << "\n\n--- Monster Turn ---\n";
+			bool isPlayerDead = targetMonster->AttackTarget(&_player);
+			if (isPlayerDead == true) {
+				cout << "\n¢º YOU DIE! ¢¸\n";
+				isBattleNotEnd = false;
+			}
 		}
+
+		isPlayerTurn = !isPlayerTurn;
 	}
 
 	cout << "\n\n";

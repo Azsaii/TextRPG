@@ -1,5 +1,5 @@
 #pragma once
-#include <vector>
+#include <unordered_map>
 #include "Job.h"
 
 class Player: public Character {
@@ -11,8 +11,6 @@ public:
 	Player();
 	~Player();
 
-	unsigned __int32 _hp_potion;
-	unsigned __int32 _mp_potion;
 	unsigned __int32 _exp;
 	unsigned __int32 _maxExp;
 
@@ -21,8 +19,10 @@ public:
 	unsigned __int32 _LevelUpAttackPowerAdd;
 	unsigned __int32 _LevelUpDefenceAdd;
 
+	unsigned __int32 _inventory_limit;
+
 	Job* _job;
-	std::vector<Item> _inventory;
+	std::unordered_map<ItemName, __int32> _inventory;
 
 	void CreateCharacter(void);
 	void PrintStatus(void) const;
@@ -30,4 +30,7 @@ public:
 	void JobSelection(void);
 	void PrintInventoryInfo(void) const;
 	bool AddExp(unsigned __int32);
+
+	ItemName GetItemNameByIndex(unsigned __int32);
+	void UseItem(ItemName itemName);
 };

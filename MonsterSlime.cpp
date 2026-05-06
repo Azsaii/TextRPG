@@ -2,16 +2,16 @@
 #include "MonsterSlime.h"
 
 MonsterSlime::MonsterSlime() {
-	_hp = 30;
-	_attackPower = 215;
+	_hp = 100;
+	_maxHp = 100;
+	_attackPower = 70;
 	_defence = 10;
 	_name = "Slime";
 	_expReward = 50;
 
-	_dropItem._name = "Slime Jelly";
-	_dropItem._price = 30;
+	_dropItem = SLIME_JELLY;
 }
 
 void MonsterSlime::MonsterAttackProc(void) {
-	std::cout << "* " << _name << "is attacking!\n";
+	
 }
